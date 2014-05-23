@@ -13,6 +13,7 @@
   CordovaFileSystem = (function() {
     function CordovaFileSystem(root) {
       this.root = root;
+      this.list = __bind(this.list, this);
       this.rmdir = __bind(this.rmdir, this);
       this.mkdir = __bind(this.mkdir, this);
       this.dirExists = __bind(this.dirExists, this);
@@ -20,6 +21,7 @@
       this.remove = __bind(this.remove, this);
       this.write = __bind(this.write, this);
       this.read = __bind(this.read, this);
+      this._fileList = __bind(this._fileList, this);
       this._removeFile = __bind(this._removeFile, this);
       this._gotFileWrite = __bind(this._gotFileWrite, this);
       this._readFile = __bind(this._readFile, this);
@@ -133,6 +135,16 @@
       return new RSVP.Promise((function(_this) {
         return function(res, rej) {
           return fileEntry.remove(res, rej);
+        };
+      })(this));
+    };
+
+    CordovaFileSystem.prototype._fileList = function(dirEntry) {
+      return new RSVP.Promise((function(_this) {
+        return function(res, rej) {
+          var dirReader;
+          dirReader = dirEntry.createReader();
+          return dirReader.readEntries(res, rej);
         };
       })(this));
     };
@@ -301,6 +313,45 @@
       })(this)).then((function(_this) {
         return function() {
           return cb();
+        };
+      })(this))["catch"]((function(_this) {
+        return function(ev) {
+          var _ref, _ref1;
+          return cb((_ref = ev != null ? (_ref1 = ev.target) != null ? _ref1.error : void 0 : void 0) != null ? _ref : ev);
+        };
+      })(this));
+    };
+
+    CordovaFileSystem.prototype.list = function(dir, cb) {
+      if (dir.substr(0, 1) !== '/') {
+        dir = "" + this.root + "/" + dir;
+      } else {
+        dir = dir.substr(1);
+      }
+      return this.init().then((function(_this) {
+        return function(fileSystem) {
+          return _this._gotDir(fileSystem, dir);
+        };
+      })(this)).then((function(_this) {
+        return function(dirEntry) {
+          return _this._fileList(dirEntry);
+        };
+      })(this)).then((function(_this) {
+        return function(entries) {
+          entries.sort(function(a, b) {
+            if (!a.isDirectory && b.isDirectory) {
+              return 1;
+            }
+            if (a.isDirectory && !b.isDirectory) {
+              return -1;
+            }
+            if (a.name > b.name) {
+              return 1;
+            } else {
+              return -1;
+            }
+          });
+          return cb(null, entries);
         };
       })(this))["catch"]((function(_this) {
         return function(ev) {

@@ -53,6 +53,11 @@ class CordovaFileSystem
   _removeFile: (fileEntry) =>
     new RSVP.Promise (res, rej) => fileEntry.remove res, rej
 
+  _fileList: (dirEntry) =>
+    new RSVP.Promise (res, rej) =>
+      dirReader = dirEntry.createReader()
+      dirReader.readEntries res, rej
+
   read: (file, cb) =>
     if file.substr(0, 1) isnt '/'
       file = "#{@root}/#{file}"
@@ -123,6 +128,22 @@ class CordovaFileSystem
     .then (fileSystem) => @_gotDir fileSystem, dir, { create: false }
     .then (dirEntry) => @_removeDirectory dirEntry
     .then () => cb()
+    .catch (ev) => cb(ev?.target?.error ? ev)
+
+  list: (dir, cb) =>
+    if dir.substr(0, 1) isnt '/'
+      dir = "#{@root}/#{dir}"
+    else
+      dir = dir.substr 1
+    @init()
+    .then (fileSystem) => @_gotDir fileSystem, dir
+    .then (dirEntry) => @_fileList dirEntry
+    .then (entries) =>
+      entries.sort (a, b) ->
+        return 1 if not a.isDirectory and b.isDirectory
+        return -1 if a.isDirectory and not b.isDirectory
+        if a.name > b.name then 1 else -1
+      cb null, entries
     .catch (ev) => cb(ev?.target?.error ? ev)
 
 window.CordovaFileSystem = CordovaFileSystem

@@ -259,11 +259,52 @@ SDカードにファイルを書き込みます。
       }
     });
 
+### list(dirname, callback)
+
+指定したディレクトリ内のファイル/ディレクトリ一覧を取得します。
+
+#### 引数
+
+* dirname
+
+    ディレクトリパスを指定します。ディレクトリが存在しない場合はエラーが返ります。
+
+    `read()`と同様にrootディレクトリからの指定が可能です。
+
+* callback
+
+    ファイル/ディレクトリ一覧に対して処理したりエラー判定をするコールバック関数を指定します。
+
+    コールバック関数に渡される引数は`(Errorオブジェクト, FileEntryオブジェクトの配列)`です。
+
+    FileEntryオブジェクトについては[公式ドキュメント](http://docs.phonegap.com/ja/3.4.0/cordova_file_file.md.html#FileEntry)を参照してください。
+
+#### 例
+
+    // myApp/hogeディレクトリ内のファイル/ディレクトリ一覧を取得する
+    fs.list('hoge', function (err, fileEntries) {
+      if (err) {
+        throw err; // ディレクトリが存在しないなどのエラー
+      }
+
+      // ファイル名一覧をconsole.logで出力
+      for (var i = 0; i < fileEntries.length; i++) {
+        // ディレクトリは除外
+        if (! fileEntries[i].isDirectory) {
+          console.log(fileEntries[i].name);
+        }
+      }
+    });
+
 ## 対応バージョン
 
 PhoneGap3.4.0での動作を確認しています。それ以下のバージョン(特にバージョン3より前)では正常に動作しない可能性があります。
 
 ## Changelog
+
+### 0.1.1 (2014-05-24)
+
+* `list()`メソッド追加
 
 ### 0.1.0 (2014-04-23)
 
