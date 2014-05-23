@@ -1,5 +1,5 @@
 ###
-# CordovaFileSystem v0.1.0
+# CordovaFileSystem v0.1.1
 # (c) 2014 ktty1220
 # License: MIT
 ###
